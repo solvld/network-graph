@@ -1,20 +1,23 @@
 import { FormEvent, useState } from 'react';
-import { useSearch } from '../../services/queries';
 
-export function SearchForm() {
+interface SearchFormParams {
+  mutate: (input: { address: string }) => void;
+  disable: boolean;
+}
+
+export function SearchForm({ mutate, disable }: SearchFormParams) {
   const [address, setAddress] = useState<string>('');
-
-  const { mutate, isPending } = useSearch();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    mutate({ address });
-
-    setAddress('');
+    if (address) {
+      mutate({ address });
+      setAddress('');
+    } else return;
   };
   return (
     <>
-      <div className="w-full h-8 flex justify-center mt-8">
+      <div className="w-full h-14 flex justify-center mt-8">
         <form onSubmit={handleSubmit} className="flex items-center gap-4">
           <input
             type="text"
@@ -23,7 +26,7 @@ export function SearchForm() {
             onChange={e => setAddress(e.target.value)}
             value={address}
           />
-          <button type="submit" disabled={isPending} className="btn">
+          <button type="submit" disabled={disable} className="btn">
             Search
           </button>
         </form>
