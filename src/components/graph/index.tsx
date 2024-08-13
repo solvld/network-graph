@@ -2,14 +2,14 @@ import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { GraphProps, Node, Link } from '../../lib/types';
 
-const Graph: React.FC<GraphProps> = ({ data }) => {
+const Graph: React.FC<GraphProps> = ({ data, mutate }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
     if (!svgRef.current) return;
 
     const width = 800;
-    const height = 600;
+    const height = 700;
 
     const svg = d3
       .select(svgRef.current)
@@ -18,6 +18,20 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
 
     svg.selectAll('*').remove();
 
+    svg
+      .append('defs')
+      .append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 23)
+      .attr('refY', 0)
+      .attr('markerWidth', 12)
+      .attr('markerHeight', 15)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('fill', '#64748b');
+
     const simulation = d3
       .forceSimulation<Node>(data.nodes)
       .force(
@@ -25,20 +39,28 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
         d3
           .forceLink<Node, Link>(data.links)
           .id(d => d.id)
-          .distance(90),
+          .distance(270),
       )
-      .force('charge', d3.forceManyBody().strength(-800))
-      .force('center', d3.forceCenter(width / 2.25, height / 2.5));
+      .force('charge', d3.forceManyBody().strength(-1000))
+      .force('center', d3.forceCenter(width, height / 2))
+      .force(
+        'x',
+        d3.forceX(d => (d.role == 'sender' ? width / 6 : (4 * width) / 1.5)),
+      )
+      .force(
+        'y',
+        d3.forceX(d => (d.role == 'receiver' ? height / 6 : height / 3)),
+      );
 
     const link = svg
       .append('g')
-      .attr('class', 'links')
       .selectAll('line')
       .data(data.links)
       .enter()
       .append('line')
-      .attr('stroke-width', '1px')
-      .attr('stroke', '#64748b');
+      .attr('stroke-width', 1)
+      .attr('stroke', '#64748b')
+      .attr('marker-end', 'url(#arrowhead)');
 
     const node = svg
       .append('g')
@@ -51,23 +73,34 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
     node
       .append('circle')
       .attr('r', d => (d.id == data.nodes[0].id ? 20 : 15))
-      .style('border', 'solid 1px white')
       .attr('fill', d => {
-        if (d.id == data.nodes[0].id) {
-          return '#3b82f6';
-        } else if (d.type == 'user') {
+        if (d.type == 'user') {
           return '#4ade80';
         } else if (d.type == 'bridge') {
           return '#38bdf8 ';
         } else return '#1e1b4b ';
+      })
+      .data(data.nodes)
+      .on('click', (_, d: Node) => {
+        if (d.id !== data.nodes[0].id) {
+          mutate({ address: d.id });
+        }
       });
 
     node
       .append('text')
       .text(d => d.name)
-      .attr('dy', d => (d.id == data.nodes[0].id ? -25 : -20))
+      .attr('dy', d => (d.id == data.nodes[0].id ? -35 : -32))
       .attr('text-anchor', 'middle')
       .style('fill', '#030712');
+
+    node
+      .append('text')
+      .text(d => d.id)
+      .attr('dy', d => (d.id == data.nodes[0].id ? -22 : -17))
+      .attr('text-anchor', 'middle')
+      .style('fill', '#9d09ad')
+      .style('font-size', 12);
 
     node
       .append('text')
@@ -85,7 +118,7 @@ const Graph: React.FC<GraphProps> = ({ data }) => {
 
       node.attr('transform', d => `translate(${d.x}, ${d.y})`);
     });
-  }, [data]);
+  }, [data, mutate]);
 
   return <svg ref={svgRef}></svg>;
 };

@@ -1,6 +1,6 @@
 import Graph from './components/graph';
 import { SearchForm } from './components/searchForm';
-import { transformServerData } from './lib/utils';
+import { addRoles, transformServerData } from './lib/utils';
 import { useSearch } from './services/queries';
 
 export default function App() {
@@ -8,7 +8,9 @@ export default function App() {
   return (
     <>
       <SearchForm mutate={mutate} disable={isPending} />
-      {data && <Graph data={transformServerData(data)} />}
+      {data && (
+        <Graph data={transformServerData(addRoles(data))} mutate={mutate} />
+      )}
     </>
   );
 }

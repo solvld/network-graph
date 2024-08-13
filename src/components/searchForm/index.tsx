@@ -6,7 +6,7 @@ interface SearchFormParams {
 }
 
 export function SearchForm({ mutate, disable }: SearchFormParams) {
-  const [address, setAddress] = useState<string>('');
+  const [address, setAddress] = useState<string>('0xABCDEF123456');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -10,3 +10,21 @@ export function transformServerData(data: ServerData): GraphData {
     })),
   };
 }
+
+export function addRoles(graphData: ServerData) {
+  const nodesMap = new Map(graphData.nodes.map(node => [node.id, node]));
+
+  graphData.links.forEach(link => {
+    const senderNode = nodesMap.get(link.sender);
+    const receiverNode = nodesMap.get(link.receiver);
+
+    if (senderNode) {
+      senderNode.role = 'sender';
+    }
+    if (receiverNode) {
+      receiverNode.role = 'receiver';
+    }
+  });
+
+  return graphData;
+}

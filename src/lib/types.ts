@@ -8,6 +8,7 @@ export interface Node extends d3.SimulationNodeDatum {
     amount: number;
     usdt_amount: number;
   }[];
+  role: 'sender' | 'receiver';
 }
 
 export interface Link extends d3.SimulationLinkDatum<Node> {
@@ -30,6 +31,7 @@ export interface GraphData {
 
 export interface GraphProps {
   data: GraphData;
+  mutate: (input: { address: string }) => void;
 }
 
 export interface ServerData {
